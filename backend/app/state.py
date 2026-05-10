@@ -4,6 +4,7 @@ from typing import Annotated, TypedDict
 
 class FlowState(TypedDict):
     topic: str
+    recipient_email: str
     research_results: list[dict]
     summary: str
     email_draft: dict

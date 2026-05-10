@@ -13,8 +13,10 @@ def main():
 
     config = RunnableConfig(configurable={"thread_id": "cli_thread"})
     topic = sys.argv[1]
+    recipient = sys.argv[2] if len(sys.argv) > 2 else "you@example.com"
     state = {
         "topic": topic,
+        "recipient_email": recipient,
         "research_results": [],
         "summary": "",
         "email_draft": {},

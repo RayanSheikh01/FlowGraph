@@ -10,6 +10,7 @@ def test_graph_runs_end_to_end_with_mocks():
     config: RunnableConfig = {"configurable": {"thread_id": str(uuid.uuid4())}}
     initial_state = {
         "topic": "Artificial Intelligence",
+        "recipient_email": "test@example.com",
         "research_results": [],
         "summary": "",
         "email_draft": {},
