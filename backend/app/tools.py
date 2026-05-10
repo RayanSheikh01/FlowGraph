@@ -1,10 +1,18 @@
+from langchain_tavily import TavilySearch
+from langchain_google_genai import ChatGoogleGenerativeAI
+
+search_tool = TavilySearch()
+
+
+
 def search_web_impl(query: str) -> list:
-    # Placeholder for web search implementation
-    return [{"title": "Result 1", "url": "https://example.com/1"}, {"title": "Result 2", "url": "https://example.com/2"}]
+    return search_tool.run(query, num_results=1)
 
 def summarize_results_impl(results: list[dict]) -> str:
-    # Placeholder for summarization implementation
-    return "This is a summary of the research results."
+    summary = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0).run(
+        f"Summarize the following research results: {results}"
+    )
+    return summary
 
 def draft_email_impl(summary: str) -> dict:
     # Placeholder for email drafting implementation
