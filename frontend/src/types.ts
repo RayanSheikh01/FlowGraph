@@ -24,6 +24,7 @@ export interface FlowState {
   summary: string
   email_draft: EmailDraft
   email_sent: boolean
+  message_id?: string | null
   node_status: Partial<Record<NodeName, NodeStatus>>
   error: string | null
 }

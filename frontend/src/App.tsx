@@ -9,6 +9,7 @@ function App() {
   const connectionStatus = useGraphStore((s) => s.connectionStatus)
   const flowState = useGraphStore((s) => s.flowState)
   const done = useGraphStore((s) => s.done)
+  const wsError = useGraphStore((s) => s.error)
 
   const [topic, setTopic] = useState('')
   const [recipient, setRecipient] = useState('')
@@ -24,6 +25,12 @@ function App() {
     if (!canRun) return
     start(topic.trim(), recipient.trim())
   }
+
+  const stateError = flowState?.error ?? null
+  const errorMessage = wsError?.message ?? stateError
+  const errorNode = wsError?.node ?? null
+  const sendSucceeded = done?.state.email_sent === true
+  const sendFailed = done !== null && done.state.email_sent !== true
 
   return (
     <div className="app">
@@ -50,6 +57,34 @@ function App() {
           {connectionStatus}
         </div>
       </header>
+
+      {(sendSucceeded || sendFailed || errorMessage) && (
+        <div className="banner-row">
+          {sendSucceeded && (
+            <div className="banner banner--success">
+              <strong>Email sent.</strong>
+              {done?.state.message_id && (
+                <span className="banner__meta">
+                  Message-ID: <code>{done.state.message_id}</code>
+                </span>
+              )}
+            </div>
+          )}
+          {sendFailed && !errorMessage && (
+            <div className="banner banner--error">
+              <strong>Email send failed.</strong>
+            </div>
+          )}
+          {errorMessage && (
+            <div className="banner banner--error">
+              <strong>
+                Error{errorNode ? ` in ${errorNode}` : ''}:
+              </strong>
+              <span className="banner__meta">{errorMessage}</span>
+            </div>
+          )}
+        </div>
+      )}
 
       <main className="app-main">
         <div className="graph-canvas">

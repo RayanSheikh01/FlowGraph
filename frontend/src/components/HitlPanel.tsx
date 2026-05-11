@@ -85,14 +85,28 @@ export const HitlPanel = ({ resume }: HitlPanelProps) => {
 
   if (done) {
     const wasRejected = !!done.state.error
+    const sent = done.state.email_sent === true
     return (
       <div style={{ ...panel, borderColor: wasRejected ? '#c0392b' : '#27ae60' }}>
         <h3>{wasRejected ? 'Flow rejected' : 'Flow complete'}</h3>
-        <p>
-          {wasRejected
-            ? done.state.error
-            : `Email sent to ${done.state.email_draft?.to ?? ''}`}
-        </p>
+        {wasRejected && <p>{done.state.error}</p>}
+        {sent && (
+          <>
+            <p>Email sent to {done.state.email_draft?.to ?? ''}</p>
+            {done.state.message_id && (
+              <p
+                style={{
+                  fontFamily: 'monospace',
+                  fontSize: '0.85rem',
+                  opacity: 0.8,
+                  wordBreak: 'break-all',
+                }}
+              >
+                Message-ID: {done.state.message_id}
+              </p>
+            )}
+          </>
+        )}
         <button onClick={() => window.location.reload()}>Start new flow</button>
       </div>
     )

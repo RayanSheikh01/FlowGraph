@@ -18,8 +18,8 @@ class Settings(BaseSettings):
 
     smtp_host: str = "smtp.gmail.com"
     smtp_port: int = 465
-    smtp_user: str | None = None
-    smtp_pass: str | None = None
+    smtp_user: str
+    smtp_pass: str
     smtp_from: str | None = None
 
 

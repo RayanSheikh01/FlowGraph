@@ -9,5 +9,6 @@ class FlowState(TypedDict):
     summary: str
     email_draft: dict
     email_sent: bool
+    message_id: str | None
     node_status: Annotated[dict[str, str], operator.or_]
     error: str | None

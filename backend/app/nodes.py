@@ -1,10 +1,13 @@
+from email.utils import make_msgid
+
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_tavily import TavilySearch
 from langgraph.graph import END
 from langgraph.types import Command, interrupt
 from pydantic import BaseModel
+from smtplib import SMTP_SSL
 
-from . import config  # noqa: F401  -- side effect: loads .env into os.environ
+from .config import settings
 from .state import FlowState
 
 search_tool = TavilySearch()
@@ -131,7 +134,31 @@ def gate_email_node(state: FlowState):
 
 
 def send_email_node(state: FlowState) -> dict:
-    return {
-        "email_sent": True,
-        "node_status": {"send_email": "completed"},
-    }
+    draft = state["email_draft"]
+    message_id = make_msgid()
+    from_addr = settings.smtp_from or settings.smtp_user
+    try:
+        with SMTP_SSL(settings.smtp_host, settings.smtp_port) as smtp:
+            smtp.login(settings.smtp_user, settings.smtp_pass)
+            smtp.sendmail(
+                from_addr=from_addr,
+                to_addrs=draft["to"],
+                msg=(
+                    f"Message-ID: {message_id}\n"
+                    f"From: {from_addr}\n"
+                    f"To: {draft['to']}\n"
+                    f"Subject: {draft['subject']}\n\n"
+                    f"{draft['body']}"
+                ),
+            )
+        return {
+            "email_sent": True,
+            "message_id": message_id,
+            "node_status": {"send_email": "completed"},
+        }
+    except Exception as e:
+        return {
+            "email_sent": False,
+            "node_status": {"send_email": "failed"},
+            "error": f"Failed to send email: {str(e)}",
+        }
