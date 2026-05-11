@@ -2,9 +2,10 @@ import { useState } from 'react'
 import GraphCanvas from './components/GraphCanvas'
 import { useGraphSocket } from './hooks/useGraphSocket'
 import { useGraphStore } from './store'
+import { HitlPanel } from './components/HitlPanel'
 
 function App() {
-  const { start } = useGraphSocket()
+  const { start, resume } = useGraphSocket()
   const connectionStatus = useGraphStore((s) => s.connectionStatus)
   const flowState = useGraphStore((s) => s.flowState)
   const done = useGraphStore((s) => s.done)
@@ -56,7 +57,9 @@ function App() {
         </div>
 
         <aside className="side-panel">
-          <div className="hitl-panel"></div>
+          <div className="hitl-panel">
+            <HitlPanel resume={resume} />
+          </div>
           <div className="state-inspector"></div>
         </aside>
       </main>

@@ -8,7 +8,7 @@ from . import config  # noqa: F401  -- side effect: loads .env into os.environ
 from .state import FlowState
 
 search_tool = TavilySearch()
-llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0)
+llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0)
 
 
 class EmailDraft(BaseModel):
@@ -55,9 +55,9 @@ def gate_research_node(state: FlowState):
             },
         )
     update: dict = {"node_status": {"gate_research": "approved"}}
-    if patch is not None:
-        update["research_results"] = patch
-    return update
+    if isinstance(patch, dict) and "research_results" in patch:
+        update["research_results"] = patch["research_results"]
+    return Command(goto="summarize", update=update)
 
 
 def summarize_node(state: FlowState) -> dict:
@@ -88,9 +88,9 @@ def gate_summarize_node(state: FlowState):
             },
         )
     update: dict = {"node_status": {"gate_summarize": "approved"}}
-    if patch is not None:
-        update["summary"] = patch
-    return update
+    if isinstance(patch, dict) and "summary" in patch:
+        update["summary"] = patch["summary"]
+    return Command(goto="draft_email", update=update)
 
 
 def draft_email_node(state: FlowState) -> dict:
@@ -125,9 +125,9 @@ def gate_email_node(state: FlowState):
             },
         )
     update: dict = {"node_status": {"gate_email": "approved"}}
-    if patch is not None:
-        update["email_draft"] = {**state["email_draft"], **patch}
-    return update
+    if isinstance(patch, dict) and isinstance(patch.get("email_draft"), dict):
+        update["email_draft"] = {**state["email_draft"], **patch["email_draft"]}
+    return Command(goto="send_email", update=update)
 
 
 def send_email_node(state: FlowState) -> dict:

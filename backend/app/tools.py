@@ -9,7 +9,7 @@ def search_web_impl(query: str) -> list:
     return search_tool.run(query, num_results=1)
 
 def summarize_results_impl(results: list[dict]) -> str:
-    summary = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0).run(
+    summary = ChatGoogleGenerativeAI(model="gemma-3-27b-it", temperature=0).run(
         f"Summarize the following research results: {results}"
     )
     return summary

@@ -17,20 +17,17 @@ def create_flow_graph() -> StateGraph:
 
     graph = StateGraph(FlowState)
     graph.add_node("research", research_node)
-    graph.add_node("gate_research", gate_research_node)
+    graph.add_node("gate_research", gate_research_node, destinations=("summarize", END))
     graph.add_node("summarize", summarize_node)
-    graph.add_node("gate_summarize", gate_summarize_node)
+    graph.add_node("gate_summarize", gate_summarize_node, destinations=("draft_email", END))
     graph.add_node("draft_email", draft_email_node)
-    graph.add_node("gate_email", gate_email_node)
+    graph.add_node("gate_email", gate_email_node, destinations=("send_email", END))
     graph.add_node("send_email", send_email_node)
 
     graph.add_edge(START, "research")
     graph.add_edge("research", "gate_research")
-    graph.add_edge("gate_research", "summarize")
     graph.add_edge("summarize", "gate_summarize")
-    graph.add_edge("gate_summarize", "draft_email")
     graph.add_edge("draft_email", "gate_email")
-    graph.add_edge("gate_email", "send_email")
     graph.add_edge("send_email", END)
 
     return graph

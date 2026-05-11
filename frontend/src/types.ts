@@ -2,7 +2,7 @@ export type NodeName = 'research' | 'summarize' | 'draft_email' | 'send_email'
 
 export type NodeStatus = 'idle' | 'running' | 'paused' | 'complete' | 'error'
 
-export type InterruptStep = 'approve_research' | 'approve_summary' | 'approve_draft'
+export type InterruptStep = 'gate_research' | 'gate_summarize' | 'gate_email'
 
 export type HitlDecision = 'approve' | 'edit' | 'reject'
 
@@ -43,7 +43,7 @@ export interface InterruptMessage {
   type: 'interrupt'
   step: InterruptStep
   message: string
-  preview: Partial<FlowState> | null
+  preview: unknown
 }
 
 export interface DoneMessage {

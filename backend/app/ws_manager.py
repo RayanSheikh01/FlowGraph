@@ -41,11 +41,11 @@ class ErrorMsg(BaseModel):
 
 def decode_decision(msg: ResumeMsg):
     """Translate a ResumeMsg into the value LangGraph's Command(resume=...) expects."""
-    if msg.decision == "approve":
-        return True
     if msg.decision == "reject":
         return False
-    return {"approved": True, "patch": msg.patch or {}}
+    if msg.patch:
+        return {"approved": True, "patch": msg.patch}
+    return True
 
 
 async def safe_send(ws: WebSocket, msg: BaseModel) -> bool:
