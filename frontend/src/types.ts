@@ -42,13 +42,13 @@ export interface NodeStatusMessage {
 export interface InterruptMessage {
   type: 'interrupt'
   step: InterruptStep
-  preview: Partial<FlowState>
+  message: string
+  preview: Partial<FlowState> | null
 }
 
 export interface DoneMessage {
   type: 'done'
-  email_sent: boolean
-  message_id: string
+  state: FlowState
 }
 
 export interface ErrorMessage {

@@ -1,45 +1,54 @@
-import ReactFlow, { Background, Controls } from 'reactflow';
-import 'reactflow/dist/style.css';
+import { useMemo } from 'react'
+import ReactFlow, { Background, Controls, type Edge, type Node } from 'reactflow'
+import 'reactflow/dist/style.css'
 
-const initialNodes = [
-  {
-    id: '1',
-    type: 'input',
-    data: { label: 'Research Node' },
-    position: { x: 0, y: 0 },
-  },
-  {
-    id: '2',
-    data: { label: 'Summarization Node' },
-    position: { x: 240, y: 0 },
-  },
-  {
-    id: '3',
-    data: { label: 'Draft Email Node' },
-    position: { x: 480, y: 0 },
-  },
-  {
-    id: '4',
-    data: { label: 'Send Email Node' },
-    position: { x: 720, y: 0 },
-  },
-];
+import { useGraphStore } from '../store'
+import type { NodeName, NodeStatus } from '../types'
+import NodeCard, { type NodeCardData } from './NodeCard'
 
-const initialEdges = [
-  { id: 'e1-2', source: '1', target: '2' },
-  { id: 'e2-3', source: '2', target: '3' },
-  { id: 'e3-4', source: '3', target: '4' },
-];
+const NODE_LAYOUT: { id: NodeName; label: string; x: number }[] = [
+  { id: 'research', label: 'Research', x: 0 },
+  { id: 'summarize', label: 'Summarize', x: 240 },
+  { id: 'draft_email', label: 'Draft Email', x: 480 },
+  { id: 'send_email', label: 'Send Email', x: 720 },
+]
+
+const EDGES: Edge[] = [
+  { id: 'e1', source: 'research', target: 'summarize' },
+  { id: 'e2', source: 'summarize', target: 'draft_email' },
+  { id: 'e3', source: 'draft_email', target: 'send_email' },
+]
+
+const nodeTypes = { flowNode: NodeCard }
 
 function GraphCanvas() {
+  const nodeStatus = useGraphStore(
+    (s) => s.flowState?.node_status,
+  ) as Partial<Record<NodeName, NodeStatus>> | undefined
+
+  const nodes: Node<NodeCardData>[] = useMemo(
+    () =>
+      NODE_LAYOUT.map(({ id, label, x }) => ({
+        id,
+        type: 'flowNode',
+        position: { x, y: 0 },
+        data: {
+          label,
+          nodeName: id,
+          status: nodeStatus?.[id] ?? 'idle',
+        },
+      })),
+    [nodeStatus],
+  )
+
   return (
-    <div style={{ width: '100%', height: '600px' }}>
-      <ReactFlow nodes={initialNodes} edges={initialEdges} fitView>
+    <div style={{ width: '100%', height: '100%' }}>
+      <ReactFlow nodes={nodes} edges={EDGES} nodeTypes={nodeTypes} fitView>
         <Background />
         <Controls />
       </ReactFlow>
     </div>
-  );
+  )
 }
 
-export default GraphCanvas;
+export default GraphCanvas
