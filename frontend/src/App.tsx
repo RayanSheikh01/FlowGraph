@@ -3,6 +3,7 @@ import GraphCanvas from './components/GraphCanvas'
 import { useGraphSocket } from './hooks/useGraphSocket'
 import { useGraphStore } from './store'
 import { HitlPanel } from './components/HitlPanel'
+import { StateInspector } from './components/StateInspector'
 
 function App() {
   const { start, resume } = useGraphSocket()
@@ -10,6 +11,7 @@ function App() {
   const flowState = useGraphStore((s) => s.flowState)
   const done = useGraphStore((s) => s.done)
   const wsError = useGraphStore((s) => s.error)
+  const clearError = useGraphStore((s) => s.clearError)
 
   const [topic, setTopic] = useState('')
   const [recipient, setRecipient] = useState('')
@@ -81,6 +83,15 @@ function App() {
                 Error{errorNode ? ` in ${errorNode}` : ''}:
               </strong>
               <span className="banner__meta">{errorMessage}</span>
+              {wsError && (
+                <button
+                  className="banner__dismiss"
+                  onClick={clearError}
+                  aria-label="Dismiss error"
+                >
+                  ×
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -95,7 +106,9 @@ function App() {
           <div className="hitl-panel">
             <HitlPanel resume={resume} />
           </div>
-          <div className="state-inspector"></div>
+          <div className="state-inspector">
+            <StateInspector />
+          </div>
         </aside>
       </main>
     </div>

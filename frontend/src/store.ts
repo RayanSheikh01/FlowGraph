@@ -25,6 +25,7 @@ interface GraphStore {
   clearInterrupt: () => void
   setDone: (msg: DoneMessage) => void
   setError: (msg: ErrorMessage) => void
+  clearError: () => void
   reset: () => void
 }
 
@@ -55,6 +56,7 @@ export const useGraphStore = create<GraphStore>((set) => ({
   clearInterrupt: () => set({ interrupt: null }),
   setDone: (done) => set({ done }),
   setError: (error) => set({ error }),
+  clearError: () => set({ error: null }),
 
   reset: () =>
     set({

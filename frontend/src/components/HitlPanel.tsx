@@ -1,30 +1,6 @@
 import { useEffect, useState } from 'react'
-import type { CSSProperties } from 'react'
 import { useGraphStore } from '../store'
 import type { EmailDraft, HitlDecision, ResumePatch } from '../types'
-
-const panel: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '1rem',
-  padding: '1rem',
-  border: '1px solid #ccc',
-  borderRadius: '4px',
-  backgroundColor: '#f9f9f9',
-}
-
-const buttonRow: CSSProperties = {
-  display: 'flex',
-  gap: '0.5rem',
-}
-
-const textarea: CSSProperties = {
-  width: '100%',
-  minHeight: '6rem',
-  fontFamily: 'inherit',
-  fontSize: '0.9rem',
-  padding: '0.5rem',
-}
 
 const EMPTY_EMAIL: EmailDraft = { to: '', subject: '', body: '' }
 
@@ -53,9 +29,6 @@ export const HitlPanel = ({ resume }: HitlPanelProps) => {
   const [emailDraft, setEmailDraft] = useState<EmailDraft>(EMPTY_EMAIL)
   const [submitting, setSubmitting] = useState(false)
 
-  // Seed editable drafts only when a new interrupt arrives. Depending on
-  // flowState here would re-fire on every state_update — re-enabling the
-  // buttons before the next interrupt arrives and clobbering user edits.
   useEffect(() => {
     if (!interrupt) {
       setSubmitting(false)
@@ -63,7 +36,8 @@ export const HitlPanel = ({ resume }: HitlPanelProps) => {
     }
     const fs = useGraphStore.getState().flowState
     if (interrupt.step === 'gate_summarize') {
-      const preview = typeof interrupt.preview === 'string' ? interrupt.preview : null
+      const preview =
+        typeof interrupt.preview === 'string' ? interrupt.preview : null
       setSummaryDraft(preview ?? fs?.summary ?? '')
     } else if (interrupt.step === 'gate_email') {
       const preview = isEmailDraft(interrupt.preview) ? interrupt.preview : null
@@ -74,11 +48,20 @@ export const HitlPanel = ({ resume }: HitlPanelProps) => {
 
   if (error) {
     return (
-      <div style={{ ...panel, borderColor: '#c0392b' }}>
-        <h3>Flow error</h3>
-        <p>{error.message}</p>
-        {error.node && <p style={{ opacity: 0.7 }}>Failing node: {error.node}</p>}
-        <button onClick={() => window.location.reload()}>Start new flow</button>
+      <div className="hitl hitl--error" key="error">
+        <h3 className="hitl__title">Flow error</h3>
+        <p className="hitl__body">{error.message}</p>
+        {error.node && (
+          <p className="hitl__meta">Failing node: {error.node}</p>
+        )}
+        <div className="hitl__buttons">
+          <button
+            className="hitl-btn hitl-btn--ghost"
+            onClick={() => window.location.reload()}
+          >
+            Start new flow
+          </button>
+        </div>
       </div>
     )
   }
@@ -87,40 +70,45 @@ export const HitlPanel = ({ resume }: HitlPanelProps) => {
     const wasRejected = !!done.state.error
     const sent = done.state.email_sent === true
     return (
-      <div style={{ ...panel, borderColor: wasRejected ? '#c0392b' : '#27ae60' }}>
-        <h3>{wasRejected ? 'Flow rejected' : 'Flow complete'}</h3>
-        {wasRejected && <p>{done.state.error}</p>}
+      <div
+        className={`hitl ${wasRejected ? 'hitl--error' : 'hitl--success'}`}
+        key="done"
+      >
+        <h3 className="hitl__title">
+          {wasRejected ? 'Flow rejected' : 'Flow complete'}
+        </h3>
+        {wasRejected && <p className="hitl__body">{done.state.error}</p>}
         {sent && (
           <>
-            <p>Email sent to {done.state.email_draft?.to ?? ''}</p>
+            <p className="hitl__body">
+              Email sent to {done.state.email_draft?.to ?? ''}
+            </p>
             {done.state.message_id && (
-              <p
-                style={{
-                  fontFamily: 'monospace',
-                  fontSize: '0.85rem',
-                  opacity: 0.8,
-                  wordBreak: 'break-all',
-                }}
-              >
+              <p className="hitl__meta hitl__meta--mono">
                 Message-ID: {done.state.message_id}
               </p>
             )}
           </>
         )}
-        <button onClick={() => window.location.reload()}>Start new flow</button>
+        <div className="hitl__buttons">
+          <button
+            className="hitl-btn hitl-btn--ghost"
+            onClick={() => window.location.reload()}
+          >
+            Start new flow
+          </button>
+        </div>
       </div>
     )
   }
 
   if (!interrupt) {
     return (
-      <div style={panel}>
-        <h3>Awaiting interrupt</h3>
-        {flowState ? (
-          <p>Flow is running…</p>
-        ) : (
-          <p>No flow started yet.</p>
-        )}
+      <div className="hitl hitl--idle" key="idle">
+        <h3 className="hitl__title">Awaiting interrupt</h3>
+        <p className="hitl__body">
+          {flowState ? 'Flow is running…' : 'No flow started yet.'}
+        </p>
       </div>
     )
   }
@@ -160,18 +148,18 @@ export const HitlPanel = ({ resume }: HitlPanelProps) => {
     interrupt.step === 'gate_summarize' || interrupt.step === 'gate_email'
 
   return (
-    <div style={panel}>
-      <h3>Human Intervention Required</h3>
-      <p>{interrupt.message}</p>
+    <div className="hitl hitl--paused" key={interrupt.step}>
+      <h3 className="hitl__title">Human intervention required</h3>
+      <p className="hitl__body">{interrupt.message}</p>
 
       {interrupt.step === 'gate_research' && (
-        <ul>
+        <ul className="hitl__research">
           {(flowState?.research_results ?? []).map((r) => (
             <li key={r.url}>
               <a href={r.url} target="_blank" rel="noreferrer">
                 {r.title}
               </a>
-              <div>{r.snippet}</div>
+              <div className="hitl__snippet">{r.snippet}</div>
             </li>
           ))}
         </ul>
@@ -179,16 +167,16 @@ export const HitlPanel = ({ resume }: HitlPanelProps) => {
 
       {interrupt.step === 'gate_summarize' && (
         <textarea
-          style={textarea}
+          className="hitl__textarea"
           value={summaryDraft}
           onChange={(e) => setSummaryDraft(e.target.value)}
         />
       )}
 
       {interrupt.step === 'gate_email' && (
-        <>
-          <label>
-            To
+        <div className="hitl__form">
+          <label className="hitl__field">
+            <span>To</span>
             <input
               type="email"
               value={emailDraft.to}
@@ -197,8 +185,8 @@ export const HitlPanel = ({ resume }: HitlPanelProps) => {
               }
             />
           </label>
-          <label>
-            Subject
+          <label className="hitl__field">
+            <span>Subject</span>
             <input
               type="text"
               value={emailDraft.subject}
@@ -207,26 +195,41 @@ export const HitlPanel = ({ resume }: HitlPanelProps) => {
               }
             />
           </label>
-          <textarea
-            style={textarea}
-            value={emailDraft.body}
-            onChange={(e) =>
-              setEmailDraft({ ...emailDraft, body: e.target.value })
-            }
-          />
-        </>
+          <label className="hitl__field">
+            <span>Body</span>
+            <textarea
+              className="hitl__textarea"
+              value={emailDraft.body}
+              onChange={(e) =>
+                setEmailDraft({ ...emailDraft, body: e.target.value })
+              }
+            />
+          </label>
+        </div>
       )}
 
-      <div style={buttonRow}>
-        <button onClick={onApprove} disabled={submitting}>
+      <div className="hitl__buttons">
+        <button
+          className="hitl-btn hitl-btn--primary"
+          onClick={onApprove}
+          disabled={submitting}
+        >
           Approve
         </button>
         {canEdit && (
-          <button onClick={onEdit} disabled={submitting}>
-            Edit and Resume
+          <button
+            className="hitl-btn"
+            onClick={onEdit}
+            disabled={submitting}
+          >
+            Edit & resume
           </button>
         )}
-        <button onClick={onReject} disabled={submitting}>
+        <button
+          className="hitl-btn hitl-btn--danger"
+          onClick={onReject}
+          disabled={submitting}
+        >
           Reject
         </button>
       </div>

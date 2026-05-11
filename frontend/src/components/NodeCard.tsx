@@ -11,7 +11,7 @@ export interface NodeCardData {
 function NodeCard({ data }: NodeProps<NodeCardData>) {
   const { label, status } = data
   return (
-    <div className="node-card">
+    <div className={`node-card node-card--${status}`}>
       <Handle type="target" position={Position.Left} />
       <span className="node-card__label">{label}</span>
       <span className={`status-pill status-pill--${status}`}>{status}</span>
